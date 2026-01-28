@@ -11,9 +11,10 @@ export function useScrollSpy(
     sectionIds: string[],
     options: UseScrollSpyOptions = {}
 ) {
-    const { offset = 150, rootMargin = "-20% 0px -70% 0px" } = options;
+    const { offset = 150, rootMargin = "-10% 0px -80% 0px" } = options;
     const [activeSection, setActiveSection] = useState<string>(sectionIds[0] || "");
     const observerRef = useRef<IntersectionObserver | null>(null);
+    const isScrollingRef = useRef(false);
 
     useEffect(() => {
         // Disconnect previous observer
@@ -21,18 +22,31 @@ export function useScrollSpy(
             observerRef.current.disconnect();
         }
 
-        // Create new observer
+        // Create new observer with improved settings
         observerRef.current = new IntersectionObserver(
             (entries) => {
-                entries.forEach((entry) => {
-                    if (entry.isIntersecting) {
-                        setActiveSection(entry.target.id);
-                    }
-                });
+                // Don't update during programmatic scroll
+                if (isScrollingRef.current) return;
+
+                // Find the most visible/topmost intersecting entry
+                const visibleEntries = entries.filter(entry => entry.isIntersecting);
+
+                if (visibleEntries.length > 0) {
+                    // Sort by position (top of viewport = higher priority)
+                    visibleEntries.sort((a, b) => {
+                        const rectA = a.boundingClientRect;
+                        const rectB = b.boundingClientRect;
+                        return rectA.top - rectB.top;
+                    });
+
+                    // Pick the topmost visible section
+                    const topEntry = visibleEntries[0];
+                    setActiveSection(topEntry.target.id);
+                }
             },
             {
                 rootMargin,
-                threshold: 0.1,
+                threshold: [0, 0.1, 0.25, 0.5],
             }
         );
 
@@ -55,11 +69,20 @@ export function useScrollSpy(
         (sectionId: string) => {
             const element = document.getElementById(sectionId);
             if (element) {
+                // Immediately update active section on click
+                setActiveSection(sectionId);
+                isScrollingRef.current = true;
+
                 const top = element.offsetTop - offset;
                 window.scrollTo({
                     top,
                     behavior: "smooth",
                 });
+
+                // Re-enable observer after scroll completes
+                setTimeout(() => {
+                    isScrollingRef.current = false;
+                }, 800);
             }
         },
         [offset]

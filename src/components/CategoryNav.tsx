@@ -142,7 +142,7 @@ export default function CategoryNav({
                                         key={category.id}
                                         onClick={() => handleCategoryClick(category.id)}
                                         className={`flex items-center gap-3 p-4 rounded-2xl transition-all active:scale-95 ${activeCategory === category.id
-                                            ? "ring-2"
+                                            ? ""
                                             : "bg-dark-600 hover:bg-dark-700"
                                             }`}
                                         style={{
@@ -150,10 +150,11 @@ export default function CategoryNav({
                                                 activeCategory === category.id
                                                     ? `${category.accentColor}20`
                                                     : undefined,
-                                            ringColor:
+                                            outline:
                                                 activeCategory === category.id
-                                                    ? category.accentColor
+                                                    ? `2px solid ${category.accentColor}`
                                                     : undefined,
+                                            outlineOffset: activeCategory === category.id ? '0px' : undefined,
                                         }}
                                     >
                                         <span className="text-2xl">{category.icon}</span>
