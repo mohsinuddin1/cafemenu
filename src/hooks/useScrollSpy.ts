@@ -73,16 +73,20 @@ export function useScrollSpy(
                 setActiveSection(sectionId);
                 isScrollingRef.current = true;
 
-                const top = element.offsetTop - offset;
+                // Use getBoundingClientRect for accurate positioning
+                const rect = element.getBoundingClientRect();
+                const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                const targetTop = scrollTop + rect.top - offset;
+
                 window.scrollTo({
-                    top,
+                    top: Math.max(0, targetTop),
                     behavior: "smooth",
                 });
 
                 // Re-enable observer after scroll completes
                 setTimeout(() => {
                     isScrollingRef.current = false;
-                }, 800);
+                }, 1000);
             }
         },
         [offset]

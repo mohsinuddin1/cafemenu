@@ -14,7 +14,7 @@ import { categories, menuItems, getMenuItemsByCategory, MenuItem, Category } fro
 export default function MenuPage() {
     const categoryIds = useMemo(() => categories.map((c) => c.id), []);
     const { activeSection, scrollToSection } = useScrollSpy(categoryIds, {
-        offset: 180,
+        offset: 100,
     });
 
     const [filteredItems, setFilteredItems] = useState<MenuItem[]>(menuItems);
