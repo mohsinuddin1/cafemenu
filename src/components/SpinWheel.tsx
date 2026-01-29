@@ -52,11 +52,28 @@ export default function SpinWheel() {
         }
 
         // Calculate final rotation to land on the prize
-        // Pointer is at top (0 degrees), prizes start from right and go clockwise
-        const prizeRotation = prizeIndex * segmentAngle + segmentAngle / 2;
-        const finalRotation = fullRotations * 360 + (360 - prizeRotation + 90);
+        // CSS conic-gradient(from 0deg) starts at the TOP and goes clockwise
+        // Each segment is 60deg (360/6)
+        // Prize index 0: center at 30deg from top
+        // Prize index 1: center at 90deg from top, etc.
+        const segmentCenter = prizeIndex * segmentAngle + segmentAngle / 2;
 
-        setRotation(prev => prev + finalRotation);
+        // To land prize at the TOP (under the pointer at 0deg/360deg):
+        // We need to rotate the wheel so the segment center aligns with the top
+        // If segment center is at 30deg, we rotate by (360 - 30) = 330deg
+        const targetAngle = (360 - segmentCenter) % 360;
+
+        // Current wheel position (normalized to 0-360)
+        const currentAngle = rotation % 360;
+
+        // How much do we need to rotate from current position to reach target?
+        let angleToTarget = targetAngle - currentAngle;
+        if (angleToTarget < 0) angleToTarget += 360;
+
+        // Total rotation = full spins + angle to target
+        const totalRotation = fullRotations * 360 + angleToTarget;
+
+        setRotation(prev => prev + totalRotation);
 
         // Show result after spin completes
         setTimeout(() => {
@@ -231,8 +248,8 @@ export default function SpinWheel() {
                                     whileHover={!isSpinning && !hasSpun ? { scale: 1.02 } : {}}
                                     whileTap={!isSpinning && !hasSpun ? { scale: 0.98 } : {}}
                                     className={`w-full py-4 rounded-xl font-bold text-lg transition-all ${isSpinning || hasSpun
-                                            ? "bg-gray-600 text-gray-400 cursor-not-allowed"
-                                            : "bg-gradient-to-r from-amber-500 to-orange-600 text-dark-900 shadow-lg shadow-orange-500/30"
+                                        ? "bg-gray-600 text-gray-400 cursor-not-allowed"
+                                        : "bg-gradient-to-r from-amber-500 to-orange-600 text-dark-900 shadow-lg shadow-orange-500/30"
                                         }`}
                                 >
                                     {isSpinning ? (
